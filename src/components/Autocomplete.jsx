@@ -46,27 +46,31 @@ const Autocomplete = () => {
     return (...args) => {
       if (timer) {
         clearTimeout(timer);
-        timer = setTimeout(() => func(...args), delay);
       }
+      timer = setTimeout(() => func(...args), delay);
     };
   };
 
   const handleFilterChange = (value) => {
     console.log("value: ", value);
+    if(!value) {
+      setLatestOptions(options);
+      return;
+    }
     const newOptions = latestOptions.filter(({ name }) =>
-      name.startsWith(value)
+      name.toLowerCase().startsWith(value.toLowerCase())
     );
     console.log("newOptions: ", newOptions);
     setLatestOptions(newOptions);
   };
 
-  const handle = debounce(handleFilterChange, 1000);
+  const handle = debounce(handleFilterChange, 500);
 
   const renderOptions = useMemo(() => {
     return latestOptions.map(({ id, name, code }) => (
-      <div key={`${id} -${code}`} onClick={handleOptionClick}>
+      <option key={`${id} -${code}`} onClick={handleOptionClick}>
         {name}
-      </div>
+      </option>
     ));
   }, [latestOptions]);
 
@@ -81,37 +85,36 @@ const Autocomplete = () => {
   };
 
   return (
-    <>
-      <div onClick={onClick}>
-        <div
+    <button type="button" onClick={onClick} style={{ all: "unset", cursor: "pointer" }} aria-expanded={isExpanded}>
+      <label>{label}</label>
+      <div
+        style={{
+          display: "flex",
+          height: "2rem",
+          position: "relative",
+          alignItems: "center",
+        }}
+      >
+        <input
+          type="text"
+          style={{ height: "100%", flex: "1" }}
+          value={country}
+          onChange={onChange}
+        />
+        <img
+          src={isExpanded ? CollapseIcon : ExpandIcon}
+          className="logo react"
+          alt="React logo"
           style={{
-            display: "flex",
-            height: "2rem",
-            position: "relative",
-            alignItems: "center",
+            height: "1.5rem",
+            position: "absolute",
+            right: "0.5rem",
+            padding: "0",
           }}
-        >
-          <input
-            type="text"
-            style={{ height: "100%", flex: "1" }}
-            value={country}
-            onChange={onChange}
-          />
-          <img
-            src={isExpanded ? CollapseIcon : ExpandIcon}
-            className="logo react"
-            alt="React logo"
-            style={{
-              height: "1.5rem",
-              position: "absolute",
-              right: "0.5rem",
-              padding: "0",
-            }}
-          />
-        </div>
-        {isExpanded && <div>{renderOptions}</div>}
+        />
       </div>
-    </>
+      {isExpanded && <div>{renderOptions}</div>}
+    </button>
   );
 };
 
